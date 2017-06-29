@@ -76,8 +76,11 @@ type
     apply(op,var Operand,Operand)
 ]#
 
-proc apply*(chebyshev:Chebyshev,
-            res:var any, op:any, arg:any) = # any does not match var?
+# We use a template to avoid problems with the type of `res`.
+# While non-var type works for `res` containing `ptr` or `ref`
+# types, `res` requires a var type for simple object.
+template apply*(chebyshev:Chebyshev,
+                res:typed, op:typed, arg:typed) =
   ## Apply the `chebyshev` approximation of an `Operator`, `op`, on
   ## an argument `arg`.  The return type is the same as the `arg`.
   ## A `proc` `apply` must be defined for `op`, as
