@@ -21,14 +21,6 @@ Types
 
     Parameters for Chebyshev approximation.
 
-Procs
-
-    proc apply(chebyshev: Chebyshev; res: var any; op: any; arg: any)
-
-    Apply the chebyshev approximation of an Operator, op, on an
-    argument arg. The return type is the same as the arg. A proc
-    apply must be defined for op, as op.apply(output,intput).
-
 Templates
 
     template newChebyshev(ab: Slice[float]; n: int; fx: untyped): Chebyshev
@@ -37,3 +29,9 @@ Templates
     the interval as in [a, b], maximum degree n, and the
     function, fx given as an expression of type float, which uses
     x as the parameter of type float.
+
+    template apply(chebyshev: Chebyshev; res: typed; op: typed; arg: typed)
+
+    Apply the chebyshev approximation of an Operator, op, on an
+    argument arg. The return type is the same as the arg. A proc
+    apply must be defined for op, as op.apply(output,intput).
