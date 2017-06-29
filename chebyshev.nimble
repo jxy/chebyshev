@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.0.0"
+version       = "0.1.0"
 author        = "Xiao-Yong Jin"
 description   = "Chebyshev approximation."
 license       = "MIT"
