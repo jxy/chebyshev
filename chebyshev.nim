@@ -139,19 +139,23 @@ when isMainModule:
   template `+`(x:M, y:float):M = M(v:[V(v:[x.v[0].v[0]+y,x.v[0].v[1]]),V(v:[x.v[1].v[0],x.v[1].v[1]+y])])
   template `-`(x:float, y:M):M = M(v:[V(v:[x-y.v[0].v[0],-y.v[0].v[1]]),V(v:[-y.v[1].v[0],x-y.v[1].v[1]])])
   template `+`(x:M, y:M):M =
-    let
-      a = x.v[0].v[0] + y.v[0].v[0]
-      b = x.v[0].v[1] + y.v[0].v[1]
-      c = x.v[1].v[0] + y.v[1].v[0]
-      d = x.v[1].v[1] + y.v[1].v[1]
-    M(v:[V(v:[a,b]),V(v:[c,d])])
+    M(v:[V(v:[
+        x.v[0].v[0] + y.v[0].v[0],
+        x.v[0].v[1] + y.v[0].v[1]
+      ]),
+      V(v:[
+        x.v[1].v[0] + y.v[1].v[0],
+        x.v[1].v[1] + y.v[1].v[1]
+      ])])
   template `-`(x:M, y:M):M =
-    let
-      a = x.v[0].v[0] - y.v[0].v[0]
-      b = x.v[0].v[1] - y.v[0].v[1]
-      c = x.v[1].v[0] - y.v[1].v[0]
-      d = x.v[1].v[1] - y.v[1].v[1]
-    M(v:[V(v:[a,b]),V(v:[c,d])])
+    M(v:[V(v:[
+        x.v[0].v[0] - y.v[0].v[0],
+        x.v[0].v[1] - y.v[0].v[1]
+      ]),
+      V(v:[
+        x.v[1].v[0] - y.v[1].v[0],
+        x.v[1].v[1] - y.v[1].v[1]
+      ])])
   template `*`(x:float, y:M):M = M(v:[x*y.v[0],x*y.v[1]])
   template `+=`(x:var M, y:M) = x = x+y
   suite "log2(x)":
