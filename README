@@ -1,0 +1,39 @@
+Chebyshev approximation in Nim
+
+This module implements Chebyshev polynomial approximation to an
+interval of a function.  The approximation works for a single
+variable, and also for large scale sparse matrix operations as
+well.
+
+User has to define a set of operations, sepcifically, apply,
+assign, and newOneOf, to be able to use the interface. When
+concept in Nim matures, we will use concept to enforce those.
+
+See the end of the source code of this module for examples of use
+cases.
+
+Types
+
+    Chebyshev = object
+      coef*: seq[float]            ## Coefficients.
+      center*, halfwidth*: float   ## Center and half width of the approximation interval.
+      degree*: int                 ## Degree of the approximation.
+
+    Parameters for Chebyshev approximation.
+
+Procs
+
+    proc apply(chebyshev: Chebyshev; res: var any; op: any; arg: any)
+
+    Apply the chebyshev approximation of an Operator, op, on an
+    argument arg. The return type is the same as the arg. A proc
+    apply must be defined for op, as op.apply(output,intput).
+
+Templates
+
+    template newChebyshev(ab: Slice[float]; n: int; fx: untyped): Chebyshev
+
+    Create a Chebyshev object with computed coefficients, given
+    the interval as in [a, b], maximum degree n, and the
+    function, fx given as an expression of type float, which uses
+    x as the parameter of type float.
