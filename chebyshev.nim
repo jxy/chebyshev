@@ -86,9 +86,7 @@ template apply*(chebyshev:Chebyshev,
   ## A `proc` `apply` must be defined for `op`, as
   ## `op.apply(output,intput)`.
   mixin apply, assign, newOneOf
-  var
-    f = newOneOf res
-    g = newOneOf res
+  var t = [newOneOf res, newOneOf res]
   let
     c = chebyshev.center
     ih = 1.0/chebyshev.halfWidth
@@ -97,13 +95,17 @@ template apply*(chebyshev:Chebyshev,
     op.apply(a,b)
     a.assign(ih*(a-c*b))
   for i in countdown(chebyshev.degree,1):
-    applyScaled(res,f)
-    res.assign(2.0*res-g+chebyshev.coef[i]*arg)
-    g.assign f
-    f.assign res
-    #echo i," ",f," ",g
-  applyScaled(res,f)
-  res += 0.5*chebyshev.coef[0]*arg-g
+    let
+      j = i and 1
+      k = j xor 1
+    applyScaled(res,t[j])
+    t[k].assign(2.0*res-t[k]+chebyshev.coef[i]*arg)
+    #echo i," ",t[j]," ",t[k]
+  let
+    j = chebyshev.degree and 1
+    k = j xor 1
+  applyScaled(res,t[j])
+  res += 0.5*chebyshev.coef[0]*arg-t[k]
 
 template chebyshevT*(res:typed, n:int, op:typed, arg:typed) =
   ## Apply the Chebyshev polynomial of the first kind with degree, `n`,
