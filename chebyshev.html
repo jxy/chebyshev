@@ -1234,6 +1234,8 @@ function main() {
     title="newChebyshev(ab: Slice[float]; n: int; fx: untyped): Chebyshev"><wbr />new<wbr />Chebyshev<span class="attachedType" style="visibility:hidden">Chebyshev</span></a></li>
   <li><a class="reference" href="#apply.t,Chebyshev,typed,typed,typed"
     title="apply(chebyshev: Chebyshev; res: typed; op: typed; arg: typed)"><wbr />apply<span class="attachedType" style="visibility:hidden">Chebyshev</span></a></li>
+  <li><a class="reference" href="#chebyshevT.t,typed,int,typed,typed"
+    title="chebyshevT(res: typed; n: int; op: typed; arg: typed)"><wbr />chebyshev<wbr />T<span class="attachedType" style="visibility:hidden"></span></a></li>
 
   </ul>
 </li>
@@ -1291,6 +1293,15 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="/edit/devel/chebyshev.nim#L82" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+<dt id="chebyshevT"><a name="chebyshevT.t,typed,int,typed,typed"></a><pre><span class="Keyword">template</span> <span class="Identifier">chebyshevT</span><span class="Other">(</span><span class="Identifier">res</span><span class="Other">:</span> <span class="Identifier">typed</span><span class="Other">;</span> <span class="Identifier">n</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">;</span> <span class="Identifier">op</span><span class="Other">:</span> <span class="Identifier">typed</span><span class="Other">;</span> <span class="Identifier">arg</span><span class="Other">:</span> <span class="Identifier">typed</span><span class="Other">)</span></pre></dt>
+<dd>
+Apply the Chebyshev polynomial of the first kind with degree, <cite>n</cite>, of the operator <cite>op</cite> to the operand <cite>arg</cite>, and save the result in <cite>res</cite>.
+&nbsp;&nbsp;<a
+href="/tree/master/chebyshev.nim#L108"
+class="link-seesrc" target="_blank">Source</a>
+<a href="/edit/devel/chebyshev.nim#L108" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 
 </dl></div>
 
@@ -1301,7 +1312,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small>Made with Nim. Generated: 2017-06-29 14:44:35 UTC</small>
+        <small>Made with Nim. Generated: 2017-06-29 22:39:12 UTC</small>
       </div>
     </div>
   </div>

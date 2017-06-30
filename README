@@ -35,3 +35,9 @@ Templates
     Apply the chebyshev approximation of an Operator, op, on an
     argument arg. The return type is the same as the arg. A proc
     apply must be defined for op, as op.apply(output,intput).
+
+    template chebyshevT(res: typed; n: int; op: typed; arg: typed)
+
+    Apply the Chebyshev polynomial of the first kind with degree,
+    n, of the operator op to the operand arg, and save the result
+    in res.

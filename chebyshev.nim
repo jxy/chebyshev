@@ -263,5 +263,5 @@ when isMainModule:
     CT = 1e-12
     for x in T:
       y.chebyshevT(x.n, F(v:x.x), 1.0)
-      test ($x & ": " & $y):
+      test($x & ": " & $y):
         check y ~ x.v
