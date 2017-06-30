@@ -105,6 +105,28 @@ template apply*(chebyshev:Chebyshev,
   applyScaled(res,f)
   res += 0.5*chebyshev.coef[0]*arg-g
 
+template chebyshevT*(res:typed, n:int, op:typed, arg:typed) =
+  ## Apply the Chebyshev polynomial of the first kind with degree, `n`,
+  ## of the operator `op` to the operand `arg`, and save the result in
+  ## `res`.
+  mixin apply, assign, newOneOf
+  if 0 == n:
+    res.assign arg
+  elif 1 == n:
+    op.apply(res, arg)
+  else:
+    var t = [newOneOf res, newOneOf res]
+    t[0].assign arg
+    op.apply(t[1], arg)
+    for i in 2..<n:
+      # T_n+1 = 2 x T_n - T_n-1
+      let j = i and 1
+      op.apply(res, t[j xor 1])
+      t[j].assign(2.0*res - t[j])
+    let j = n and 1
+    op.apply(res, t[j xor 1])
+    res.assign(2.0*res - t[j])
+
 when isMainModule:
   import unittest
   var CT = 1e-12
@@ -161,7 +183,7 @@ when isMainModule:
       ])])
   template `*`(x:float, y:M):M = M(v:[x*y.v[0],x*y.v[1]])
   template `+=`(x:var M, y:M) = x = x+y
-  suite "log2(x)":
+  suite "Approximating log2(x)":
     let
       n = 6
       d = 64
@@ -228,3 +250,18 @@ when isMainModule:
       CT = 1e-8
       check y2.v[0] ~ z2.v[0]
       check y2.v[1] ~ z2.v[1]
+  suite "Check chebyshevT":
+    const T = [
+      (n:60, x:2.0/3.0, v:0.980336300429690880),
+      (n:61, x:1.0/3.0, v:0.9524252797925860546),
+      (n:100, x:5.0/3.0, v:2.576887603660056655e47),
+      (n:150, x:(-11.0)/7.0, v:2.456214171678742772e66),
+      (n:151, x:1.001, v:428.04008973052097),
+      (n:256, x:(-1.001), v:46843.475917840731),
+      (n:16384, x:(-11.0)/13.0, v:(-0.5868893295919932))]
+    var y:float
+    CT = 1e-12
+    for x in T:
+      y.chebyshevT(x.n, F(v:x.x), 1.0)
+      test ($x & ": " & $y):
+        check y ~ x.v
