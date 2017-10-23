@@ -10,6 +10,7 @@ before_install:
   - ./koch boot -d:release
   - export PATH=$PWD/bin:$PATH
   - ./koch nimble -d:release
+  - cd ..
 script:
   - nimble install -y
   - nimble test
