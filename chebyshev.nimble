@@ -12,4 +12,4 @@ requires "nim >= 0.16.0"
 task test, "Run test":
   --define: release
   --run
-  setCommand "c", "chebyshev"
+  setCommand "c", "chebyshev.nim"
