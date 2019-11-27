@@ -76,6 +76,12 @@ type
     apply(op,var Operand,Operand)
 ]#
 
+template applyScaled(op:typed,c,ih:typed,a:typed,b:typed) =
+  # a <- (x-c)/h * b = ih * (x*b - c*b)
+  mixin `*`, apply, assign
+  op.apply(a,b)
+  a.assign(ih*(a-c*b))
+
 # We use a template to avoid problems with the type of `res`.
 # While non-var type works for `res` containing `ptr` or `ref`
 # types, `res` requires a var type for simple object.
@@ -84,27 +90,23 @@ template apply*(chebyshev:Chebyshev,
   ## Apply the `chebyshev` approximation of an `Operator`, `op`, on
   ## an argument `arg`.  The return type is the same as the `arg`.
   ## A `proc` `apply` must be defined for `op`, as
-  ## `op.apply(output,intput)`.
-  mixin apply, assign, newOneOf
+  ## `op.apply(output,input)`.
+  mixin `*`, `+=`, apply, assign, newOneOf
   var t = [newOneOf res, newOneOf res]
   let
     c = chebyshev.center
     ih = 1.0/chebyshev.halfWidth
-  template applyScaled(a:typed,b:typed) =
-    # a <- (x-c)/h * b = ih * (x*b - c*b)
-    op.apply(a,b)
-    a.assign(ih*(a-c*b))
   for i in countdown(chebyshev.degree,1):
     let
       j = i and 1
       k = j xor 1
-    applyScaled(res,t[j])
+    op.applyScaled(c,ih,res,t[j])
     t[k].assign(2.0*res-t[k]+chebyshev.coef[i]*arg)
     #echo i," ",t[j]," ",t[k]
   let
     j = chebyshev.degree and 1
     k = j xor 1
-  applyScaled(res,t[j])
+  op.applyScaled(c,ih,res,t[j])
   res += 0.5*chebyshev.coef[0]*arg-t[k]
 
 template chebyshevT*(res:typed, n:int, op:typed, arg:typed) =
@@ -137,9 +139,9 @@ when isMainModule:
   type F = object
     v:float
   # Operations for a float
-  template assign(z:var float, x:float) = z = x
-  template apply(o:F, z:var float, x:float) = z = o.v*x
-  template newOneOf(x:float):float = 0.0
+  proc assign(z:var float, x:float) = z = x
+  proc apply(o:F, z:var float, x:float) = z = o.v*x
+  proc newOneOf(x:float):float = 0.0
   # For a matrix or an operator
   type
     V = object
@@ -147,44 +149,29 @@ when isMainModule:
     M = object
       v:array[2,V]
   # Operations for an operator
-  template assign(z:var V, x:V) = z = x
-  template apply(m:M, z:var V, x:V) =
+  proc assign(z:var V, x:V) = z = x
+  proc apply(m:M, z:var V, x:V) =
     z.v[0] = m.v[0].v[0]*x.v[0] + m.v[0].v[1]*x.v[1]
     z.v[1] = m.v[1].v[0]*x.v[0] + m.v[1].v[1]*x.v[1]
-  template newOneOf(x:V):V = V(v:[0.0,0.0])
-  template `*`(x:float, y:V):V = V(v:[x*y.v[0],x*y.v[1]])
-  template `+`(x:V, y:V):V = V(v:[x.v[0]+y.v[0],x.v[1]+y.v[1]])
-  template `-`(x:V, y:V):V = V(v:[x.v[0]-y.v[0],x.v[1]-y.v[1]])
-  template `+=`(x:var V, y:V) = x = x+y
+  proc newOneOf(x:V):V = V(v:[0.0,0.0])
+  proc `*`(x:float, y:V):V = V(v:[x*y.v[0],x*y.v[1]])
+  proc `+`(x:V, y:V):V = V(v:[x.v[0]+y.v[0],x.v[1]+y.v[1]])
+  proc `-`(x:V, y:V):V = V(v:[x.v[0]-y.v[0],x.v[1]-y.v[1]])
+  proc `+=`(x:var V, y:V) = x = x+y
   # Operations for a matrix
-  template assign(z:var M, x:M) = z = x
-  template apply(m:M, mm:var M, x:M) =
+  proc assign(z:var M, x:M) = z = x
+  proc apply(m:M, mm:var M, x:M) =
     for i in 0..1:
       mm.v[i].v[0] = m.v[i].v[0] * x.v[0].v[0] + m.v[i].v[1] * x.v[1].v[0]
       mm.v[i].v[1] = m.v[i].v[0] * x.v[0].v[1] + m.v[i].v[1] * x.v[1].v[1]
-  template newOneOf(x:M):M = M(v:[V(v:[0.0,0.0]),V(v:[0.0,0.0])])
-  template `+`(x:M, y:float):M = M(v:[V(v:[x.v[0].v[0]+y,x.v[0].v[1]]),V(v:[x.v[1].v[0],x.v[1].v[1]+y])])
-  template `-`(x:float, y:M):M = M(v:[V(v:[x-y.v[0].v[0],-y.v[0].v[1]]),V(v:[-y.v[1].v[0],x-y.v[1].v[1]])])
-  template `+`(x:M, y:M):M =
-    M(v:[V(v:[
-        x.v[0].v[0] + y.v[0].v[0],
-        x.v[0].v[1] + y.v[0].v[1]
-      ]),
-      V(v:[
-        x.v[1].v[0] + y.v[1].v[0],
-        x.v[1].v[1] + y.v[1].v[1]
-      ])])
-  template `-`(x:M, y:M):M =
-    M(v:[V(v:[
-        x.v[0].v[0] - y.v[0].v[0],
-        x.v[0].v[1] - y.v[0].v[1]
-      ]),
-      V(v:[
-        x.v[1].v[0] - y.v[1].v[0],
-        x.v[1].v[1] - y.v[1].v[1]
-      ])])
-  template `*`(x:float, y:M):M = M(v:[x*y.v[0],x*y.v[1]])
-  template `+=`(x:var M, y:M) = x = x+y
+  proc newOneOf(x:M):M = M(v:[V(v:[0.0,0.0]),V(v:[0.0,0.0])])
+  proc `+`(x:M, y:float):M = M(v:[V(v:[x.v[0].v[0]+y,x.v[0].v[1]]),V(v:[x.v[1].v[0],x.v[1].v[1]+y])])
+  proc `-`(x:float, y:M):M = M(v:[V(v:[x-y.v[0].v[0],-y.v[0].v[1]]),V(v:[-y.v[1].v[0],x-y.v[1].v[1]])])
+  proc `+`(x:M, y:M):M = M(v:[x.v[0]+y.v[0], x.v[1]+y.v[1]])
+  proc `-`(x:M, y:M):M = M(v:[x.v[0]-y.v[0], x.v[1]-y.v[1]])
+  proc `*`(x:float, y:M):M = M(v:[x*y.v[0],x*y.v[1]])
+  proc `+=`(x:var M, y:M) =
+    x = x+y
   suite "Approximating log2(x)":
     let
       n = 6
@@ -229,20 +216,20 @@ when isMainModule:
       check mm.v[1].v[0] ~ -0.48
       check mm.v[1].v[1] ~ 0.36
       mm.apply(y1, v1)
-      #echo y1.v[0]," ",y1.v[1]
+      # echo y1.v[0]," ",y1.v[1]
       check y1.v[0] ~ 0.8
       check y1.v[1] ~ -0.6
       mm.apply(y2, v2)
-      #echo y2.v[0]," ",y2.v[1]
+      # echo y2.v[0]," ",y2.v[1]
       check abs(y2.v[0]) < 2e-6
       check abs(y2.v[1]) < 2e-6
     test "Approximation of an operator":
       cheby.apply(z1, m, v1)
-      #echo z1.v[0]," ",z1.v[1]
+      # echo z1.v[0]," ",z1.v[1]
       check z1.v[0] ~ 0.8
       check z1.v[1] ~ -0.6
       cheby.apply(z2, m, v2)
-      #echo z2.v[0]," ",z2.v[1]
+      # echo z2.v[0]," ",z2.v[1]
       check abs(z2.v[0]) < 2e-6
       check abs(z2.v[1]) < 2e-6
     test "Operator reproduce explicit matrix results":
